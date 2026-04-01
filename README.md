@@ -10,7 +10,7 @@ Robokin provides a clean, backend-agnostic API for robot kinematics with pluggab
 
 ## ✨ Features
 
-- **Multiple IK backends** — [Placo](https://github.com/Rhoban/placo), [PyRoki](https://github.com/chungmin99/pyroki), RoboPlan
+- **Multiple IK backends** — [Placo](https://github.com/Rhoban/placo), [PyRoki](https://github.com/chungmin99/pyroki), [RoboPlan](https://github.com/open-planning/roboplan)
 - **URDF-first** — load any robot from [robot_descriptions](https://github.com/robot-descriptions/robot_descriptions.py) or a local URDF file
 - **3D visualization** — built-in [Viser](https://viser.studio/) UI with interactive gizmo control
 - **Rerun logging** — stream joint angles and EE trajectories to [Rerun](https://rerun.io/) dashboards
@@ -29,7 +29,7 @@ Robokin provides a clean, backend-agnostic API for robot kinematics with pluggab
 </tr>
 </table>
 
-> More demo videos will be uploaded as new examples and backends are added.
+> More demo videos will be recorded and added — for existing examples and as new backends and features land.
 
 ## 📦 Installation
 
