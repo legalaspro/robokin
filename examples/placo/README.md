@@ -2,6 +2,8 @@
 
 Examples using the [Placo](https://github.com/Rhoban/placo) IK backend with [Viser](https://viser.studio/) for 3D visualization.
 
+<video src="../../docs/assets/rerun_loop.mp4" width="600" controls></video>
+
 ## Files
 
 | File | Description |

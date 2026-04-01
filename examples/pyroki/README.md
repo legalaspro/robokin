@@ -2,6 +2,8 @@
 
 Examples using the [PyRoki](https://github.com/chungmin99/pyroki) IK backend with [Viser](https://viser.studio/) for 3D visualization.
 
+<video src="../../docs/assets/pose_cycle.mp4" width="600" controls></video>
+
 ## Files
 
 | File | Description |

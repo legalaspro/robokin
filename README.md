@@ -16,6 +16,21 @@ Robokin provides a clean, backend-agnostic API for robot kinematics with pluggab
 - **Rerun logging** — stream joint angles and EE trajectories to [Rerun](https://rerun.io/) dashboards
 - **Real-arm support** — drive hardware via [LeRobot](https://github.com/huggingface/lerobot) or ROS 2
 
+## 🎬 Showcases
+
+<table>
+<tr>
+<td><strong>Rerun IK Loop (Placo)</strong></td>
+<td><strong>Pose Cycle (PyRoki)</strong></td>
+</tr>
+<tr>
+<td><video src="docs/assets/rerun_loop.mp4" width="400" controls></video></td>
+<td><video src="docs/assets/pose_cycle.mp4" width="400" controls></video></td>
+</tr>
+</table>
+
+> More demo videos will be uploaded as new examples and backends are added.
+
 ## 📦 Installation
 
 ```bash
