@@ -24,8 +24,8 @@ Robokin provides a clean, backend-agnostic API for robot kinematics with pluggab
 <td><strong>Pose Cycle (PyRoki)</strong></td>
 </tr>
 <tr>
-<td><video src="docs/assets/rerun_loop.mp4" width="400" controls></video></td>
-<td><video src="docs/assets/pose_cycle.mp4" width="400" controls></video></td>
+<td><video src="https://github.com/user-attachments/assets/a0870cf8-3b89-4389-8cd6-e3e98c1f7457" width="400" controls></video></td>
+<td><video src="https://github.com/user-attachments/assets/ab906532-1a0e-42c9-bd37-de1ee52545c5" width="400" controls></video></td>
 </tr>
 </table>
 

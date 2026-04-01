@@ -2,7 +2,7 @@
 
 Examples using the [PyRoki](https://github.com/chungmin99/pyroki) IK backend with [Viser](https://viser.studio/) for 3D visualization.
 
-<video src="../../docs/assets/pose_cycle.mp4" width="600" controls></video>
+<video src="https://github.com/user-attachments/assets/ab906532-1a0e-42c9-bd37-de1ee52545c5" width="600" controls></video>
 
 ## Files
 
