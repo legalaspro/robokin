@@ -117,7 +117,7 @@ def main() -> None:
                     alpha = ease_in_out_sine(k / n_steps)
                     q = q_start + alpha * (q_target - q_start)
                     solver.set_joint_state(q)
-                    ui.sync_from_solver(solver)
+                    ui.sync_from_solver(solver, move_gizmo=False)
                     time.sleep(DT)
         threading.Thread(target=_run, daemon=True).start()
 
@@ -145,7 +145,7 @@ def main() -> None:
                     T_ref = interpolate_pose(T_start, T_target, alpha)
                     q = solver.servo_step(solver.get_joint_state(), T_ref)
                     solver.set_joint_state(q)
-                    ui.sync_from_solver(solver)
+                    ui.sync_from_solver(solver, move_gizmo=False)
                     time.sleep(DT)
         threading.Thread(target=_run, daemon=True).start()
 
