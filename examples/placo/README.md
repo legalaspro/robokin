@@ -2,7 +2,14 @@
 
 Examples using the [Placo](https://github.com/Rhoban/placo) IK backend with [Viser](https://viser.studio/) for 3D visualization.
 
-<video src="https://github.com/user-attachments/assets/a0870cf8-3b89-4389-8cd6-e3e98c1f7457" width="600" controls></video>
+<video src="https://github.com/user-attachments/assets/f3958cb9-21a6-460e-9a66-509d36a6c9c3" width="600" controls></video>
+
+<table>
+<tr>
+<td><video src="https://github.com/user-attachments/assets/d5ac6d6c-06f5-4219-b0f7-5234ae83877b" width="400" controls></video></td>
+<td><video src="https://github.com/user-attachments/assets/a0870cf8-3b89-4389-8cd6-e3e98c1f7457" width="400" controls></video></td>
+</tr>
+</table>
 
 ## Files
 
