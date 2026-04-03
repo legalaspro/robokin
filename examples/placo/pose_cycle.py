@@ -40,7 +40,7 @@ from robokin.placo import PlacoKinematics, PlacoConfig
 from robokin.robot_model import load_robot_description
 from robokin.transformations import (
     compute_segment_steps_from_speed,
-    ease_in_out_sine,
+    get_easing_fn,
     interpolate_pose,
 )
 from robokin.ui.viser_app import ViserRobotUI
@@ -118,6 +118,8 @@ def main() -> None:
     
      # ── Motion primitives ─────────────────────────────────────────────
 
+    easing_fn = get_easing_fn(solver.cfg.easing)
+
     def _run_segment_joint_interp(
         T_target: np.ndarray,
         stop_event: threading.Event | None = None,
@@ -137,13 +139,14 @@ def main() -> None:
             dt=DT,
             linear_speed_mps=solver.cfg.linear_speed_mps,
             angular_speed_radps=solver.cfg.angular_speed_radps,
+            easing=solver.cfg.easing,
         )
 
         for k in range(1, n_steps + 1):
             if stop_event is not None and stop_event.is_set():
                 return False
 
-            alpha = ease_in_out_sine(k / n_steps)
+            alpha = easing_fn(k / n_steps)
             q = q_start + alpha * (q_target - q_start)
             solver.set_joint_state(q)
             ui.sync_from_solver(solver, move_gizmo=False)
@@ -168,13 +171,14 @@ def main() -> None:
             dt=DT,
             linear_speed_mps=solver.cfg.linear_speed_mps,
             angular_speed_radps=solver.cfg.angular_speed_radps,
+            easing=solver.cfg.easing,
         )
 
         for k in range(1, n_steps + 1):
             if stop_event is not None and stop_event.is_set():
                 return False
 
-            alpha = ease_in_out_sine(k / n_steps)
+            alpha = easing_fn(k / n_steps)
             T_ref = interpolate_pose(T_start, T_target, alpha)
             q = solver.servo_step(solver.get_joint_state(), T_ref)
             solver.set_joint_state(q)

@@ -22,7 +22,7 @@ import placo
 
 from .transformations import (
     compute_segment_steps_from_speed,
-    ease_in_out_sine,
+    get_easing_fn,
     interpolate_pose,
 )
 
@@ -42,6 +42,7 @@ class PlacoConfig:
     # Optional offline segment-generation defaults
     linear_speed_mps: float = 0.10
     angular_speed_radps: float = 1.0
+    easing: str = "quintic"  # "quintic" (C2) or "sine" (C1)
 
 
 class PlacoKinematics:
@@ -216,6 +217,8 @@ class PlacoKinematics:
 
         T_start = self.fk(q_meas)
 
+        easing_fn = get_easing_fn(self.cfg.easing)
+
         if n_steps is None:
             n_steps = compute_segment_steps_from_speed(
                 T_start=T_start,
@@ -224,13 +227,14 @@ class PlacoKinematics:
                 linear_speed_mps=self.cfg.linear_speed_mps,
                 angular_speed_radps=self.cfg.angular_speed_radps,
                 limit_peak_speed=True,
+                easing=self.cfg.easing,
             )
         else:
             n_steps = int(n_steps)
 
         traj: list[np.ndarray] = []
         for k in range(1, n_steps + 1):
-            alpha = ease_in_out_sine(k / n_steps)
+            alpha = easing_fn(k / n_steps)
             T_ref = interpolate_pose(T_start, T_goal, alpha)
             q_cmd = self.servo_step(q_meas, T_ref)
             traj.append(q_cmd.copy())
@@ -263,5 +267,3 @@ class PlacoKinematics:
         if T.shape != (4, 4):
             raise ValueError(f"Expected transform with shape (4, 4), got {T.shape}")
         return T
-
-

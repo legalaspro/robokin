@@ -27,8 +27,31 @@ from scipy.spatial.transform import Rotation, Slerp
 # ---------------------------------------------------------------------------
 
 def ease_in_out_sine(t: float) -> float:
-    """Sinusoidal ease-in / ease-out in [0, 1]."""
+    """Sinusoidal ease-in / ease-out in [0, 1].  C1 continuous."""
     return 0.5 * (1.0 - math.cos(math.pi * float(t)))
+
+
+def ease_quintic(t: float) -> float:
+    """Quintic ease in [0, 1].  C2 continuous (zero vel + accel at boundaries)."""
+    s = float(t)
+    return 6.0 * s**5 - 15.0 * s**4 + 10.0 * s**3
+
+
+# Peak-velocity / average-velocity ratio for each easing, used by
+# compute_segment_steps_from_speed to convert desired peak speed → duration.
+EASING_PEAK_FACTOR: dict[str, float] = {
+    "sine": math.pi / 2.0,      # ≈ 1.571
+    "quintic": 15.0 / 8.0,      # = 1.875
+}
+
+
+def get_easing_fn(name: str = "quintic"):
+    """Return an easing function by name."""
+    if name == "sine":
+        return ease_in_out_sine
+    if name == "quintic":
+        return ease_quintic
+    raise ValueError(f"Unknown easing: {name!r}. Choose 'sine' or 'quintic'.")
 
 
 # ---------------------------------------------------------------------------
@@ -80,16 +103,18 @@ def compute_segment_steps_from_speed(
     linear_speed_mps: float,
     angular_speed_radps: float,
     limit_peak_speed: bool = True,
+    easing: str = "sine",
 ) -> int:
     """
     Estimate number of interpolation steps from Cartesian distance and rotation.
 
     If *limit_peak_speed* is True the provided speeds are treated as peak
-    speeds for the sinusoidal-eased trajectory.
+    speeds for the eased trajectory.  The *easing* name selects the
+    corresponding peak-factor (``"sine"`` or ``"quintic"``).
     """
     dpos, dang = pose_distance(T_start, T_goal)
 
-    easing_factor = (math.pi / 2.0) if limit_peak_speed else 1.0
+    easing_factor = EASING_PEAK_FACTOR.get(easing, math.pi / 2.0) if limit_peak_speed else 1.0
 
     t_pos = 0.0 if linear_speed_mps <= 0 else easing_factor * dpos / linear_speed_mps
     t_rot = 0.0 if angular_speed_radps <= 0 else easing_factor * dang / angular_speed_radps

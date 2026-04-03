@@ -46,7 +46,7 @@ from robokin.placo import PlacoKinematics, PlacoConfig
 from robokin.robot_model import load_robot_description
 from robokin.transformations import (
     compute_segment_steps_from_speed,
-    ease_in_out_sine,
+    get_easing_fn,
     interpolate_pose,
 )
 from robokin.ui.viser_app import ViserRobotUI
@@ -179,6 +179,8 @@ def main() -> None:
 
     # ── Helpers to start/finish segments ──────────────────────────────
 
+    easing_fn = get_easing_fn(solver.cfg.easing)
+
     def start_segment(T_goal: np.ndarray) -> None:
         nonlocal segment_active, segment_T_start, segment_T_goal, segment_t0, segment_duration
         q_meas = arm.get_joint_state()
@@ -189,6 +191,7 @@ def main() -> None:
             dt=DT,
             linear_speed_mps=solver.cfg.linear_speed_mps,
             angular_speed_radps=solver.cfg.angular_speed_radps,
+            easing=solver.cfg.easing,
         )
         segment_T_start = T_start
         segment_T_goal = T_goal
@@ -263,7 +266,7 @@ def main() -> None:
             if segment_active:
                 # Trajectory segment in progress
                 elapsed = time.perf_counter() - segment_t0
-                alpha = ease_in_out_sine(
+                alpha = easing_fn(
                     1.0 if segment_duration <= 0 else elapsed / segment_duration
                 )
                 T_ref = interpolate_pose(segment_T_start, segment_T_goal, alpha)
@@ -329,13 +332,14 @@ def main() -> None:
                 T_start=T_start, T_goal=T_rest, dt=DT,
                 linear_speed_mps=solver.cfg.linear_speed_mps,
                 angular_speed_radps=solver.cfg.angular_speed_radps,
+                easing=solver.cfg.easing,
             )
             duration = n_steps * DT
             t0 = time.perf_counter()
             while True:
                 lt0 = time.perf_counter()
                 elapsed = lt0 - t0
-                alpha = ease_in_out_sine(1.0 if duration <= 0 else elapsed / duration)
+                alpha = easing_fn(1.0 if duration <= 0 else elapsed / duration)
                 T_ref = interpolate_pose(T_start, T_rest, alpha)
                 q_meas = arm.get_joint_state()
                 q = solver.servo_step(q_meas, T_ref)

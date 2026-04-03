@@ -28,7 +28,7 @@ from . import pyroki_snippets as pks
 
 from .transformations import (
     compute_segment_steps_from_speed,
-    ease_in_out_sine,
+    get_easing_fn,
     interpolate_pose,
 )
 
@@ -39,6 +39,7 @@ class PyrokiConfig:
     vel_weight: float = 0.1
     linear_speed_mps: float = 0.10
     angular_speed_radps: float = 1.0
+    easing: str = "quintic"  # "quintic" (C2) or "sine" (C1)
 
 class PyrokiKinematics:
     """Thin PyRoki wrapper using full robot configuration vectors."""
