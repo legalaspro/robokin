@@ -17,7 +17,7 @@
 Prerequisites:
   1. Install ROS2 (Humble or later)
   2. Install the so101-ros-physical-ai stack:
-       https://github.com/dimitriBarber/so101-ros-physical-ai
+       https://github.com/legalaspro/so101-ros-physical-ai
   3. Launch the follower arm with vision:
        ros2 launch so101_bringup follower_vision.launch.py
      This publishes the following topics:
