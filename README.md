@@ -24,20 +24,20 @@ Robokin provides a clean, backend-agnostic API for robot kinematics with pluggab
 
 <table>
 <tr>
+<td><strong>ROS 2 Real Arm (Placo)</strong></td>
 <td><strong>Go to Pose</strong></td>
-<td><strong>Rerun IK Loop (Placo)</strong></td>
 </tr>
 <tr>
+<td><video src="https://github.com/user-attachments/assets/ca9ddc47-adbd-4dd0-8c6e-e57ba177ee6b" width="400" controls></video></td>
 <td><video src="https://github.com/user-attachments/assets/d5ac6d6c-06f5-4219-b0f7-5234ae83877b" width="400" controls></video></td>
-<td><video src="https://github.com/user-attachments/assets/a0870cf8-3b89-4389-8cd6-e3e98c1f7457" width="400" controls></video></td>
 </tr>
 <tr>
+<td><strong>Rerun IK Loop (Placo)</strong></td>
 <td><strong>Pose Cycle (PyRoki)</strong></td>
-<td></td>
 </tr>
 <tr>
+<td><video src="https://github.com/user-attachments/assets/a0870cf8-3b89-4389-8cd6-e3e98c1f7457" width="400" controls></video></td>
 <td><video src="https://github.com/user-attachments/assets/ab906532-1a0e-42c9-bd37-de1ee52545c5" width="400" controls></video></td>
-<td></td>
 </tr>
 </table>
 
