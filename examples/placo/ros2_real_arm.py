@@ -330,7 +330,7 @@ class IKViserSO101Node(Node):
                 q_seed = self.q_measured if self.has_arm_feedback else self.solver.get_joint_state()
                 q = self.solver.servo_step(q_seed, T_target)
                 self.solver.set_joint_state(q)
-                self.ui.sync_from_solver(self.solver, move_gizmo=False)
+                self.ui.sync_from_solver(self.solver, move_gizmo=True)
                 self._last_gizmo_T = self.solver.current_pose().copy()
             else:
                 # Still update the robot mesh so gripper slider changes show

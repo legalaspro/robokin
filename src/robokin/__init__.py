@@ -25,6 +25,7 @@ __all__ = [
     "PyrokiConfig",
     "RoboPlanOinkKinematics",
     "OinkConfig",
+    "MotionPlanner",
     "ViserRobotUI",
     "RerunRobotLogger",
 ]
@@ -40,6 +41,7 @@ def __getattr__(name: str):
         "PyrokiConfig": ("robokin.pyroki", "PyrokiConfig"),
         "RoboPlanOinkKinematics": ("robokin.roboplan_oink", "RoboPlanOinkKinematics"),
         "OinkConfig": ("robokin.roboplan_oink", "OinkConfig"),
+        "MotionPlanner": ("robokin.motion_planner", "MotionPlanner"),
         "ViserRobotUI": ("robokin.ui.viser_app", "ViserRobotUI"),
         "RerunRobotLogger": ("robokin.ui.rerun_logger", "RerunRobotLogger"),
     }
