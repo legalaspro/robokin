@@ -77,6 +77,18 @@ def interpolate_pose(
 
 
 # ---------------------------------------------------------------------------
+# Pose construction
+# ---------------------------------------------------------------------------
+
+def make_pose(xyz, rotvec_rad) -> np.ndarray:
+    """Build a 4x4 homogeneous transform from position (meters) and rotation vector."""
+    T = np.eye(4)
+    T[:3, :3] = Rotation.from_rotvec(np.asarray(rotvec_rad, dtype=float)).as_matrix()
+    T[:3, 3] = np.asarray(xyz, dtype=float)
+    return T
+
+
+# ---------------------------------------------------------------------------
 # Pose distance
 # ---------------------------------------------------------------------------
 
