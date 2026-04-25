@@ -19,9 +19,8 @@ from pathlib import Path
 
 import numpy as np
 
-from roboplan.core import Scene
+from roboplan.core import CartesianConfiguration, Scene
 from roboplan.optimal_ik import (
-    CartesianConfiguration,
     FrameTask,
     FrameTaskOptions,
     Oink,
@@ -58,19 +57,21 @@ class RoboPlanOinkKinematics:
         self,
         urdf_path: str | Path,
         srdf_path: str | Path,
-        yaml_config_path: str | Path,
         ee_frame: str,
         cfg: OinkConfig | None = None,
         *,
         group_name: str = "arm",
         base_frame: str = "base_link",
         scene_name: str = "oink_scene",
+        yaml_config_path: str | Path | None = None,
         package_paths: list[str | Path] | None = None,
     ) -> None:
         # ── Setup ──
         self.urdf_path = Path(urdf_path)
         self.srdf_path = Path(srdf_path)
-        self.yaml_config_path = Path(yaml_config_path)
+        self.yaml_config_path = yaml_config_path
+        if isinstance(self.yaml_config_path, str):
+            self.yaml_config_path = Path(self.yaml_config_path)
 
         self.ee_frame = ee_frame
         self.group_name = group_name
@@ -83,35 +84,33 @@ class RoboPlanOinkKinematics:
         self.urdf_xml = self.urdf_path.read_text()
         srdf_xml = self.srdf_path.read_text()
 
-        self.scene = Scene(
-            self.scene_name,
-            urdf=self.urdf_xml,
-            srdf=srdf_xml,
-            package_paths=self.package_paths,
-            yaml_config_path=str(self.yaml_config_path),
-        )
+        scene_args = {
+            "urdf": self.urdf_xml,
+            "srdf": srdf_xml,
+            "package_paths": self.package_paths,
+        }
+        if self.yaml_config_path:
+            scene_args["yaml_config_path"] = self.yaml_config_path
+        self.scene = Scene(self.scene_name, **scene_args)
 
         self.group_info = self.scene.getJointGroupInfo(self.group_name)
         self.q_indices = np.array(self.group_info.q_indices, dtype=int)
-
-        q_full = self.scene.getCurrentJointPositions()
-        jac = self.scene.computeFrameJacobian(q_full, self.ee_frame)
-        self.nv = jac.shape[1]
-
-        self.oink = Oink(self.nv)
+        self.oink = Oink(self.scene, self.group_name)
 
         self.goal = None
         self.frame_task = None
         self._make_frame_task()
 
-        self.constraints = [PositionLimit(self.nv, gain=self.cfg.position_limit_gain)]
+        self.constraints = [PositionLimit(self.oink, gain=self.cfg.position_limit_gain)]
 
         if self.cfg.use_velocity_limits:
-            joint_names_all = self.scene.getJointNames()
             v_max = np.hstack(
-                [self.scene.getJointInfo(name).limits.max_velocity for name in joint_names_all]
+                [
+                    self.scene.getJointInfo(name).limits.max_velocity
+                    for name in self.group_info.joint_names
+                ]
             )
-            self.constraints.append(VelocityLimit(self.nv, self.cfg.dt, v_max))
+            self.constraints.append(VelocityLimit(self.oink, self.cfg.dt, v_max))
 
     def _make_frame_task(self) -> None:
         self.goal = CartesianConfiguration()
@@ -124,7 +123,7 @@ class RoboPlanOinkKinematics:
             task_gain=self.cfg.task_gain,
             lm_damping=self.cfg.lm_damping,
         )
-        self.frame_task = FrameTask(self.goal, self.nv, task_options)
+        self.frame_task = FrameTask(self.oink, self.scene, self.goal, task_options)
 
     def _q_full_from_arm(self, q_arm: np.ndarray) -> np.ndarray:
         q_arm = np.asarray(q_arm, dtype=float)
