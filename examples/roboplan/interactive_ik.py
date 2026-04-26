@@ -46,7 +46,7 @@ from roboplan.example_models import get_package_models_dir, get_package_share_di
 SO101_DIR = get_package_models_dir() / "so101_robot_model"
 SO101_URDF = urdf_path = SO101_DIR / "so101.urdf"
 SO101_SRDF = srdf_path = SO101_DIR / "so101.srdf"
-EE_LINK = "gripper_link"
+EE_LINK = "gripper_frame_link"
 DT = 1.0 / 50.0
 
 def main() -> None:
@@ -80,8 +80,12 @@ def main() -> None:
 
     # ── Viser UI ──
     server = viser.ViserServer()
-    ui = ViserRobotUI(server=server, urdf=urdf,
-                      gripper_joint_name="gripper")
+    ui = ViserRobotUI(
+        server=server,
+        urdf=urdf,
+        gripper_joint_name="gripper",
+        solver_joint_names=solver.joint_names,
+    )
     ui.build(initial_q=q_init, initial_T=T_init, enable_joint_sliders=True, enable_gripper=True)
 
     # ── Callbacks ─────────────────────────────────────────────────────
