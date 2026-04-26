@@ -1,4 +1,4 @@
-# Copyright 2026 Dmitri Manajev
+# Copyright 2026 Sebastian Castro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ Demonstrates ViserRobotUI + PyrokiKinematics with callback-driven events.
 No hardware required.
 
 Usage:
-    python examples/pyroki/interactive_ik.py
+    python examples/roboplan/interactive_ik.py
 """
 
 from __future__ import annotations
@@ -31,18 +31,21 @@ import numpy as np
 import viser
 import yourdfpy
 
-from robokin.pyroki import PyrokiKinematics, PyrokiConfig
+from robokin.roboplan_oink import RoboPlanOinkKinematics, OinkConfig
 from robokin.robot_model import load_robot_description
 from robokin.transformations import (
     compute_segment_steps_from_speed,
     ease_in_out_sine,
-    interpolate_pose,
 )
 from robokin.ui.viser_app import ViserRobotUI
+from roboplan.example_models import get_package_models_dir, get_package_share_dir
 
 
 # ── Robot config ──────────────────────────────────────────────────────
 
+SO101_DIR = get_package_models_dir() / "so101_robot_model"
+SO101_URDF = urdf_path = SO101_DIR / "so101.urdf"
+SO101_SRDF = srdf_path = SO101_DIR / "so101.srdf"
 EE_LINK = "gripper_frame_link"
 DT = 1.0 / 50.0
 
@@ -52,10 +55,13 @@ def main() -> None:
     urdf = yourdfpy.URDF.load(str(model.urdf_path))
 
     # ── Create solver ──
-    solver = PyrokiKinematics(
-        urdf=urdf,
-        ee_link_name=EE_LINK,
-        cfg=PyrokiConfig(dt=DT, mode="basic_ik_collision"),
+    solver = RoboPlanOinkKinematics(
+        urdf_path=model.urdf_path,
+        srdf_path=SO101_SRDF,
+        package_paths=[model.urdf_path.parent],
+        group_name="",  # includes gripper joint
+        ee_frame=EE_LINK,
+        cfg=OinkConfig(dt=DT),
     )
 
     # ── Named poses (built from joint names → order-independent) ──
@@ -68,19 +74,18 @@ def main() -> None:
         "wrist_roll":    0.0,
     })
 
-    # ── Warm up JAX (first solve triggers JIT compilation) ──
-    print("Warming up JAX…")
-    solver.warmup()
-    print("JAX ready.")
-
     # ── Initial state ──
     q_init = solver.get_joint_state()
     T_init = solver.current_pose()
 
     # ── Viser UI ──
     server = viser.ViserServer()
-    ui = ViserRobotUI(server=server, urdf=urdf,
-                      gripper_joint_name="gripper")
+    ui = ViserRobotUI(
+        server=server,
+        urdf=urdf,
+        gripper_joint_name="gripper",
+        solver_joint_names=solver.joint_names,
+    )
     ui.build(initial_q=q_init, initial_T=T_init, enable_joint_sliders=True, enable_gripper=True)
 
     # ── Callbacks ─────────────────────────────────────────────────────
@@ -173,7 +178,7 @@ def main() -> None:
 
     # ── Keep alive ────────────────────────────────────────────────────
     print("\n═══════════════════════════════════════════════")
-    print("  robokin PyRoki + Viser — http://localhost:8080")
+    print("  robokin RoboPlan OInK + Viser — http://localhost:8080")
     print("  • Drag the gizmo to move the target")
     print("  • Toggle 'Manual joint control' for sliders")
     print("  • Ctrl+C to exit")
