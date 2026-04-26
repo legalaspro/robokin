@@ -14,8 +14,6 @@
 
 """Integration test for RoboPlanOinkKinematics — requires RoboPlan to be installed."""
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 

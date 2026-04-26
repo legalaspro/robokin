@@ -94,8 +94,10 @@ class RoboPlanOinkKinematics:
         self.scene = Scene(self.scene_name, **scene_args)
 
         self.group_info = self.scene.getJointGroupInfo(self.group_name)
+        self.joint_names = self.group_info.joint_names
         self.q_indices = np.array(self.group_info.q_indices, dtype=int)
         self.oink = Oink(self.scene, self.group_name)
+        self.nv = len(self.oink.v_indices)
 
         self.goal = None
         self.frame_task = None
@@ -107,10 +109,14 @@ class RoboPlanOinkKinematics:
             v_max = np.hstack(
                 [
                     self.scene.getJointInfo(name).limits.max_velocity
-                    for name in self.group_info.joint_names
+                    for name in self.joint_names
                 ]
             )
             self.constraints.append(VelocityLimit(self.oink, self.cfg.dt, v_max))
+
+    @property
+    def n_joints(self) -> int:
+        return len(self.joint_names)
 
     def _make_frame_task(self) -> None:
         self.goal = CartesianConfiguration()
@@ -133,6 +139,22 @@ class RoboPlanOinkKinematics:
         q_full[self.q_indices] = q_arm
         return q_full
     
+    def make_configuration(self, joint_values: dict[str, float]) -> np.ndarray:
+        """Build a configuration vector from a ``{name: radians}`` dict.
+
+        Joints not present in *joint_values* default to zero.
+        """
+        name_to_idx = {n: i for i, n in enumerate(self.joint_names)}
+        cfg = np.zeros(self.n_joints, dtype=float)
+        for name, val in joint_values.items():
+            if name not in name_to_idx:
+                raise KeyError(
+                    f"Unknown joint '{name}'. "
+                    f"Known joints: {self.joint_names}"
+                )
+            cfg[name_to_idx[name]] = float(val)
+        return cfg
+
     def set_joint_state(self, q_arm: np.ndarray) -> None:
         q_full = self._q_full_from_arm(q_arm)
         self.scene.setJointPositions(q_full)
@@ -180,9 +202,9 @@ class RoboPlanOinkKinematics:
 
         delta_q = np.zeros(self.nv, dtype=float)
         self.oink.solveIk(
+            self.scene,
             [self.frame_task],
             self.constraints,
-            self.scene,
             delta_q,
             self.cfg.regularization,
         )
