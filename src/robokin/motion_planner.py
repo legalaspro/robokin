@@ -76,6 +76,42 @@ class MotionPlanner:
             f"Unknown strategy '{strategy}'. Expected 'cartesian' or 'joint_quintic'."
         )
 
+    def plan_joint_move(
+        self,
+        q_start: np.ndarray,
+        q_goal: np.ndarray,
+        duration: float | None = None,
+        max_joint_speed_rad_s: float | None = None,
+        min_duration: float | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Joint-space quintic from q_start to q_goal, no IK.
+
+        When ``duration`` is None the time is auto-estimated from peak joint
+        speed, identical to ``plan_joint_quintic``.
+        """
+        q_start = np.asarray(q_start, dtype=float)
+        q_goal = np.asarray(q_goal, dtype=float)
+        if q_start.shape != q_goal.shape:
+            raise ValueError(
+                f"q_start {q_start.shape} and q_goal {q_goal.shape} shape mismatch"
+            )
+        cfg = self.solver.cfg
+        max_joint_speed_rad_s = (
+            max_joint_speed_rad_s
+            if max_joint_speed_rad_s is not None
+            else getattr(cfg, "joint_max_speed_rad_s", 0.8)
+        )
+        min_duration = (
+            min_duration
+            if min_duration is not None
+            else getattr(cfg, "joint_min_duration", 0.6)
+        )
+        if duration is None:
+            duration = self._estimate_duration(
+                q_start, q_goal, max_joint_speed_rad_s, min_duration,
+            )
+        return self._build_joint_quintic(q_start, q_goal, duration)
+
     def plan_cartesian_segment(
         self,
         q_start: np.ndarray,
