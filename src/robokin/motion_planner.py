@@ -35,8 +35,24 @@ Usage::
     ts, qs = planner.plan_pose_move(q_start, T_goal, strategy="cartesian")
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 from robokin.transformations import ease_quintic
+
+
+@dataclass(slots=True)
+class MotionPlannerConfig:
+    """Planner-owned defaults for joint-space planning strategies.
+
+    These knobs parameterize the planner itself, not any specific solver
+    backend. Cartesian-segment knobs (``linear_speed_mps`` /
+    ``angular_speed_radps``) remain on the solver configs because they
+    parameterize the solver's own segment generator.
+    """
+
+    joint_max_speed_rad_s: float = 0.8
+    joint_min_duration: float = 0.6
 
 
 class MotionPlanner:
@@ -51,8 +67,14 @@ class MotionPlanner:
       qs: shape [N, dof]
     """
 
-    def __init__(self, solver, dt: float | None = None):
+    def __init__(
+        self,
+        solver,
+        cfg: MotionPlannerConfig | None = None,
+        dt: float | None = None,
+    ):
         self.solver = solver
+        self.cfg = MotionPlannerConfig() if cfg is None else cfg
         self.dt = float(dt if dt is not None else solver.cfg.dt)
 
     def plan_pose_move(
@@ -95,16 +117,15 @@ class MotionPlanner:
             raise ValueError(
                 f"q_start {q_start.shape} and q_goal {q_goal.shape} shape mismatch"
             )
-        cfg = self.solver.cfg
         max_joint_speed_rad_s = (
             max_joint_speed_rad_s
             if max_joint_speed_rad_s is not None
-            else getattr(cfg, "joint_max_speed_rad_s", 0.8)
+            else self.cfg.joint_max_speed_rad_s
         )
         min_duration = (
             min_duration
             if min_duration is not None
-            else getattr(cfg, "joint_min_duration", 0.6)
+            else self.cfg.joint_min_duration
         )
         if duration is None:
             duration = self._estimate_duration(
@@ -141,22 +162,21 @@ class MotionPlanner:
     ) -> tuple[np.ndarray, np.ndarray]:
         """Solve IK once, then build a quintic joint-space trajectory.
 
-        Falls back to solver.cfg for speed/duration defaults when not provided.
+        Falls back to ``self.cfg`` for speed/duration defaults when not provided.
 
         Returns (ts, qs).
         """
         q_start = np.asarray(q_start, dtype=float)
-        cfg = self.solver.cfg
 
         max_joint_speed_rad_s = (
             max_joint_speed_rad_s
             if max_joint_speed_rad_s is not None
-            else getattr(cfg, "joint_max_speed_rad_s", 0.8)
+            else self.cfg.joint_max_speed_rad_s
         )
         min_duration = (
             min_duration
             if min_duration is not None
-            else getattr(cfg, "joint_min_duration", 0.6)
+            else self.cfg.joint_min_duration
         )
 
         q_goal = np.asarray(
